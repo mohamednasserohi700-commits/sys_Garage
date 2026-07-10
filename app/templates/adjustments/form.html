@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}سند تسوية جديد{% endblock %}
+{% block content %}
+<div class="page-title">سند تسوية مخزون جديد</div>
+<form method="POST" class="fiori-card">
+    <div class="form-grid">
+        <div class="form-group">
+            <label class="required">القطعة</label>
+            <select name="part_id" required>{% for p in parts %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group">
+            <label class="required">المخزن</label>
+            <select name="warehouse_id" required>{% for w in warehouses %}<option value="{{ w.id }}">{{ w.name }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group">
+            <label class="required">الكمية (موجب = زيادة، سالب = نقص)</label>
+            <input type="number" name="quantity" required placeholder="مثال: 5 أو -5">
+        </div>
+        <div class="form-group full">
+            <label class="required">سبب التسوية</label>
+            <input type="text" name="reason" required>
+        </div>
+    </div>
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="{{ url_for('adjustments.list_adjustments') }}" class="btn btn-outline">إلغاء</a>
+    </div>
+</form>
+{% endblock %}
