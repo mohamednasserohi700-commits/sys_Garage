@@ -84,13 +84,12 @@
     </div>
     <div class="fiori-card">
         <table class="fiori-table">
-            <thead><tr><th>القطعة</th><th>الكمية</th><th class="no-print">سعر التكلفة</th><th>سعر البيع</th><th>الإجمالي</th><th>المخزن</th><th>التاريخ</th><th class="no-print">إجراءات</th></tr></thead>
+            <thead><tr><th>القطعة</th><th>الكمية</th><th>سعر البيع</th><th>الإجمالي</th><th>المخزن</th><th>التاريخ</th><th class="no-print">إجراءات</th></tr></thead>
             <tbody>
             {% for w in vehicle.parts_used %}
                 <tr>
                     <td>{{ w.part.name }}</td>
                     <td>{{ w.quantity }}</td>
-                    <td class="no-print">{{ "%.2f"|format(w.unit_cost) }}</td>
                     <td>{{ "%.2f"|format(w.unit_price) }}</td>
                     <td>{{ "%.2f"|format(w.total_price) }}</td>
                     <td>{{ w.warehouse.name }}</td>
@@ -102,11 +101,11 @@
                     </td>
                 </tr>
             {% else %}
-                <tr><td colspan="8" class="text-muted">لا توجد قطع غيار مركبة</td></tr>
+                <tr><td colspan="7" class="text-muted">لا توجد قطع غيار مركبة</td></tr>
             {% endfor %}
             </tbody>
             {% if vehicle.parts_used %}
-            <tfoot><tr><td colspan="4"><strong>الإجمالي</strong></td><td><strong>{{ "%.2f"|format(vehicle.total_parts_sale) }}</strong></td><td colspan="3"></td></tr></tfoot>
+            <tfoot><tr><td colspan="3"><strong>الإجمالي</strong></td><td><strong>{{ "%.2f"|format(vehicle.total_parts_sale) }}</strong></td><td colspan="2"></td></tr></tfoot>
             {% endif %}
         </table>
     </div>
