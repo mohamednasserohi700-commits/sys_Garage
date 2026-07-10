@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}سند جرد جديد{% endblock %}
+{% block content %}
+<div class="page-title">سند جرد فعلي جديد</div>
+
+<form method="GET" class="fiori-card">
+    <div class="form-group">
+        <label>اختر المخزن</label>
+        <select name="warehouse_id" onchange="this.form.submit()">
+            <option value="">-- اختر --</option>
+            {% for w in warehouses %}
+            <option value="{{ w.id }}" {{ 'selected' if warehouse_id==w.id }}>{{ w.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+{% if warehouse_id %}
+<form method="POST" class="fiori-card mt-2">
+    <input type="hidden" name="warehouse_id" value="{{ warehouse_id }}">
+    <table class="fiori-table">
+        <thead><tr><th>القطعة</th><th>الكمية الدفترية</th><th>الكمية الفعلية</th><th>الفرق</th></tr></thead>
+        <tbody>
+        {% for part, qty in parts_with_balance %}
+            <tr>
+                <td>{{ part.name }}
+                    <input type="hidden" name="part_id[]" value="{{ part.id }}">
+                    <input type="hidden" name="book_quantity[]" value="{{ qty }}">
+                </td>
+                <td>{{ qty }}</td>
+                <td><input type="number" name="actual_quantity[]" value="{{ qty }}" min="0" style="width:100px"></td>
+                <td class="text-muted">تُحسب تلقائيًا عند الحفظ</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4" class="text-muted">لا توجد أصناف في هذا المخزن</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">حفظ سند الجرد وتعديل الأرصدة</button>
+    </div>
+</form>
+{% endif %}
+{% endblock %}

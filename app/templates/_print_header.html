@@ -1,0 +1,11 @@
+<div class="print-header" style="display:none;">
+    <h2 style="margin:0;">{{ company.company_name if company and company.company_name else 'مركز الصيانة' }}</h2>
+    {% if company %}
+    <p style="margin:4px 0 0;font-size:12px;">
+        {% if company.address %}{{ company.address }} &nbsp;|&nbsp; {% endif %}
+        {% if company.phone %}هاتف: {{ company.phone }} &nbsp;|&nbsp; {% endif %}
+        {% if company.tax_no %}الرقم الضريبي: {{ company.tax_no }}{% endif %}
+    </p>
+    {% endif %}
+    <hr>
+</div>

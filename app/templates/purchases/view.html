@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}فاتورة شراء {{ invoice.invoice_no }}{% endblock %}
+{% block content %}
+{% include "_print_header.html" %}
+<div class="page-title">
+    فاتورة شراء: {{ invoice.invoice_no }}
+    <button onclick="window.print()" class="btn btn-outline btn-sm no-print">طباعة</button>
+</div>
+<div class="fiori-card">
+    <div class="form-grid">
+        <div><label>المورد</label><div>{{ invoice.supplier.name }}</div></div>
+        <div><label>المخزن</label><div>{{ invoice.warehouse.name }}</div></div>
+        <div><label>التاريخ</label><div>{{ invoice.invoice_date.strftime('%Y-%m-%d') }}</div></div>
+    </div>
+</div>
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr><th>القطعة</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+        <tbody>
+        {% for it in invoice.items %}
+            <tr><td>{{ it.part.name }}</td><td>{{ it.quantity }}</td><td>{{ "%.2f"|format(it.unit_price) }}</td><td>{{ "%.2f"|format(it.total) }}</td></tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr><td colspan="3">المجموع الفرعي</td><td>{{ "%.2f"|format(invoice.subtotal) }}</td></tr>
+            <tr><td colspan="3">الخصم</td><td>{{ "%.2f"|format(invoice.discount) }}</td></tr>
+            <tr><td colspan="3">الضريبة ({{ invoice.tax_percent }}%)</td><td>{{ "%.2f"|format(invoice.tax_amount) }}</td></tr>
+            <tr><td colspan="3"><strong>الإجمالي</strong></td><td><strong>{{ "%.2f"|format(invoice.total) }}</strong></td></tr>
+        </tfoot>
+    </table>
+</div>
+{% endblock %}

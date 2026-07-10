@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}نظام إدارة مركز الصيانة{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fiori.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="fiori-header">
+        <div class="brand">
+            {% if company and company.logo_path %}
+            <img src="{{ url_for('static', filename=company.logo_path) }}" alt="شعار" style="height:30px;width:30px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;">
+            {% else %}
+            🔧
+            {% endif %}
+            <span>{{ company.company_name if company and company.company_name else 'نظام إدارة مركز الصيانة' }}</span>
+        </div>
+        <div class="user-box">
+            {% if license_days_remaining is defined and license_days_remaining is not none %}
+                {% if license_days_remaining <= 5 %}
+                <span class="badge badge-red">الاشتراك ينتهي خلال {{ license_days_remaining }} يوم</span>
+                {% elif license_days_remaining <= 15 %}
+                <span class="badge badge-orange">الاشتراك ينتهي خلال {{ license_days_remaining }} يوم</span>
+                {% else %}
+                <span class="badge badge-green">الاشتراك سارٍ - متبقي {{ license_days_remaining }} يوم</span>
+                {% endif %}
+            {% endif %}
+            <span>{{ current_user.full_name }} ({{ current_user.role.name if current_user.role else '' }})</span>
+            <div class="user-avatar">{{ current_user.full_name[0] if current_user.full_name else 'U' }}</div>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-logout btn-sm">🚪 خروج</a>
+        </div>
+    </header>
+
+    <nav class="fiori-sidebar">
+        <div class="nav-group-title">الرئيسية</div>
+        <a class="nav-link {{ 'active' if request.blueprint=='dashboard' }}" href="{{ url_for('dashboard.index') }}">📊 لوحة التحكم</a>
+
+        <div class="nav-group-title">الصيانة</div>
+        <a class="nav-link {{ 'active' if request.blueprint=='vehicles' }}" href="{{ url_for('vehicles.list_vehicles') }}">🚗 إدارة السيارات</a>
+
+        <div class="nav-group-title">المخزون</div>
+        <a class="nav-link {{ 'active' if request.blueprint=='parts' }}" href="{{ url_for('parts.list_parts') }}">🔩 قطع الغيار</a>
+        <a class="nav-link {{ 'active' if request.blueprint=='warehouses' }}" href="{{ url_for('warehouses.list_warehouses') }}">🏬 المخازن</a>
+        <a class="nav-link {{ 'active' if request.blueprint=='transfers' }}" href="{{ url_for('transfers.list_transfers') }}">🔁 التحويل بين المخازن</a>
+        <a class="nav-link {{ 'active' if request.blueprint=='stocktake' }}" href="{{ url_for('stocktake.list_stocktakes') }}">📋 الجرد الفعلي</a>
+        <a class="nav-link {{ 'active' if request.blueprint=='adjustments' }}" href="{{ url_for('adjustments.list_adjustments') }}">⚖️ تسوية المخزون</a>
+
+        <div class="nav-group-title">المشتريات والموردين</div>
+        <a class="nav-link {{ 'active' if request.blueprint=='purchases' }}" href="{{ url_for('purchases.list_purchases') }}">🧾 فواتير الشراء</a>
+        <a class="nav-link {{ 'active' if request.blueprint=='suppliers' }}" href="{{ url_for('suppliers.list_suppliers') }}">🚚 الموردين</a>
+
+        <div class="nav-group-title">التقارير</div>
+        <a class="nav-link {{ 'active' if request.blueprint=='reports' }}" href="{{ url_for('reports.index') }}">📈 التقارير</a>
+
+        <div class="nav-group-title">الإدارة</div>
+        <a class="nav-link {{ 'active' if request.blueprint=='users' }}" href="{{ url_for('users.list_users') }}">👤 المستخدمين والصلاحيات</a>
+        <a class="nav-link {{ 'active' if request.blueprint=='settings' }}" href="{{ url_for('settings.company_settings') }}">⚙️ الإعدادات</a>
+        {% if current_user.is_super_admin %}
+        <a class="nav-link {{ 'active' if request.blueprint=='license' }}" href="{{ url_for('license.serials') }}">🗝️ إدارة السريالات</a>
+        {% endif %}
+    </nav>
+
+    <main class="fiori-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-box flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}إدارة السريالات{% endblock %}
+{% block content %}
+<div class="page-title">🗝️ إدارة وإصدار السريالات</div>
+<div class="page-subtitle">إصدار مفاتيح تفعيل للعملاء (خاص بمزود النظام فقط)</div>
+
+{% if generated_key %}
+<div class="fiori-card" style="border-right:4px solid var(--fiori-success);">
+    <strong>السريال الجديد (انسخه بالكامل وأرسله للعميل):</strong>
+    <textarea readonly rows="4" style="width:100%;margin-top:8px;font-family:monospace;" onclick="this.select()">{{ generated_key }}</textarea>
+</div>
+{% endif %}
+
+<div class="fiori-card">
+    <strong>إصدار سريال جديد</strong>
+    <form method="POST" class="form-grid mt-2">
+        <div class="form-group">
+            <label class="required">اسم الشركة / العميل</label>
+            <input type="text" name="company_name" required>
+        </div>
+        <div class="form-group">
+            <label class="required">بصمة جهاز العميل (Machine Fingerprint)</label>
+            <input type="text" name="machine_fingerprint" required placeholder="يحصل عليها العميل من شاشة تفعيل النظام لديه">
+        </div>
+        <div class="form-group">
+            <label class="required">مدة الاشتراك</label>
+            <select name="plan" required>
+                <option value="6months">6 أشهر</option>
+                <option value="year">سنة</option>
+            </select>
+        </div>
+        <div class="form-group full">
+            <label>ملاحظات</label>
+            <input type="text" name="notes">
+        </div>
+        <div class="form-group"><button type="submit" class="btn btn-primary">إصدار السريال</button></div>
+    </form>
+</div>
+
+<div class="fiori-card">
+    <strong>سجل السريالات الصادرة ({{ issued|length }})</strong>
+    <div class="fiori-table-wrap mt-2">
+        <table class="fiori-table">
+            <thead><tr><th>الشركة</th><th>بصمة الجهاز</th><th>المدة</th><th>تاريخ الإصدار</th><th>تاريخ الانتهاء</th><th>ملاحظات</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody>
+            {% for s in issued %}
+                <tr>
+                    <td>{{ s.company_name }}</td>
+                    <td style="font-family:monospace;font-size:11px;">{{ s.machine_fingerprint }}</td>
+                    <td>{{ 'سنة' if s.plan=='year' else '6 أشهر' }}</td>
+                    <td>{{ s.issued_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ s.expires_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ s.notes or '-' }}</td>
+                    <td class="no-print">
+                        <form method="POST" action="{{ url_for('license.delete_serial', serial_id=s.id) }}" onsubmit="return confirm('حذف هذا السجل؟');">
+                            <button class="btn btn-danger btn-sm">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="empty-state">لا توجد سريالات صادرة بعد</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

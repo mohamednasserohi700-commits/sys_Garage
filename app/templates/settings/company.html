@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}الإعدادات{% endblock %}
+{% block content %}
+<div class="page-title">إعدادات الشركة</div>
+
+<form method="POST" enctype="multipart/form-data" class="fiori-card">
+    <div class="form-grid">
+        <div class="form-group"><label>اسم الشركة</label><input type="text" name="company_name" value="{{ settings.company_name or '' }}"></div>
+        <div class="form-group"><label>الشعار</label><input type="file" name="logo" accept="image/*"></div>
+        <div class="form-group"><label>الهاتف</label><input type="text" name="phone" value="{{ settings.phone or '' }}"></div>
+        <div class="form-group"><label>البريد الإلكتروني</label><input type="email" name="email" value="{{ settings.email or '' }}"></div>
+        <div class="form-group full"><label>العنوان</label><input type="text" name="address" value="{{ settings.address or '' }}"></div>
+        <div class="form-group"><label>السجل التجاري</label><input type="text" name="commercial_register" value="{{ settings.commercial_register or '' }}"></div>
+        <div class="form-group"><label>الرقم الضريبي</label><input type="text" name="tax_no" value="{{ settings.tax_no or '' }}"></div>
+        <div class="form-group"><label>نسبة الضريبة الافتراضية %</label><input type="number" step="0.01" name="tax_percent_default" value="{{ settings.tax_percent_default }}"></div>
+        <div class="form-group"><label>بادئة رقم الفاتورة</label><input type="text" name="invoice_prefix" value="{{ settings.invoice_prefix }}"></div>
+        <div class="form-group"><label>بادئة رقم أمر الصيانة</label><input type="text" name="workorder_prefix" value="{{ settings.workorder_prefix }}"></div>
+    </div>
+    <div class="mt-2"><button type="submit" class="btn btn-primary">حفظ الإعدادات</button></div>
+</form>
+
+<div class="fiori-card">
+    <strong>🔑 رقم تعريف الجهاز (Machine Fingerprint)</strong>
+    <p class="text-muted mt-2">إذا احتجت تفعيل الاشتراك أو تجديده، انسخ الكود التالي وأرسله لمزود النظام للحصول على سريال تفعيل:</p>
+    <input type="text" value="{{ machine_fingerprint }}" readonly onclick="this.select()" style="font-family:monospace;">
+    <div class="mt-2">
+        <a href="{{ url_for('license.activate') }}" class="btn btn-outline">لدي مفتاح تفعيل / تجديد، أريد إدخاله</a>
+    </div>
+</div>
+
+<div class="fiori-card">
+    <strong>النسخ الاحتياطي والاستعادة</strong>
+    <div class="mt-2">
+        <a href="{{ url_for('settings.backup_database') }}" class="btn btn-outline">تحميل نسخة احتياطية</a>
+    </div>
+    <form method="POST" action="{{ url_for('settings.restore_database') }}" enctype="multipart/form-data" class="mt-2">
+        <div class="form-group">
+            <label>استعادة من ملف نسخة احتياطية</label>
+            <input type="file" name="backup_file" accept=".db">
+        </div>
+        <button type="submit" class="btn btn-danger" onclick="return confirm('استعادة قاعدة البيانات سيستبدل كافة البيانات الحالية. متابعة؟');">استعادة</button>
+    </form>
+</div>
+
+<div class="fiori-card">
+    <strong>الأمان</strong>
+    <div class="mt-2"><a href="{{ url_for('settings.change_password') }}" class="btn btn-outline">تغيير كلمة المرور</a></div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}حركات المخزن{% endblock %}
+{% block content %}
+<div class="page-title">حركات المخزن: {{ warehouse.name }}</div>
+
+<form class="search-bar" method="GET">
+    <select name="part_id">
+        <option value="">كل القطع</option>
+        {% for p in parts %}
+        <option value="{{ p.id }}" {{ 'selected' if part_id==p.id }}>{{ p.name }}</option>
+        {% endfor %}
+    </select>
+    <input type="date" name="date_from" value="{{ date_from }}">
+    <input type="date" name="date_to" value="{{ date_to }}">
+    <button class="btn btn-outline" type="submit">فلترة</button>
+</form>
+
+<div class="kpi-grid">
+    <div class="kpi-card success"><div class="kpi-value">{{ total_in }}</div><div class="kpi-label">إجمالي الوارد</div></div>
+    <div class="kpi-card danger"><div class="kpi-value">{{ total_out }}</div><div class="kpi-label">إجمالي المنصرف</div></div>
+    <div class="kpi-card"><div class="kpi-value">{{ total_in - total_out }}</div><div class="kpi-label">الرصيد الحالي (الفترة)</div></div>
+</div>
+
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr><th>القطعة</th><th>نوع الحركة</th><th>الكمية</th><th>المرجع</th><th>المستخدم</th><th>التاريخ</th></tr></thead>
+        <tbody>
+        {% for m in movements %}
+            <tr>
+                <td>{{ m.part.name }}</td>
+                <td>{{ m.type_label }}</td>
+                <td>{% if m.quantity > 0 %}<span class="badge badge-green">+{{ m.quantity }}</span>{% else %}<span class="badge badge-red">{{ m.quantity }}</span>{% endif %}</td>
+                <td>{{ m.reference_no or '-' }}</td>
+                <td>{{ m.user.full_name if m.user else '-' }}</td>
+                <td>{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" class="empty-state">لا توجد حركات</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

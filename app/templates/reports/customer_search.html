@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}تقرير عميل{% endblock %}
+{% block content %}
+{% include "_print_header.html" %}
+<div class="page-title">{{ title }}</div>
+<form method="GET" class="search-bar no-print">
+    <input type="text" name="phone" placeholder="رقم هاتف العميل" value="{{ phone }}">
+    <button class="btn btn-outline" type="submit">بحث</button>
+</form>
+{% if phone %}
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for row in rows %}
+            <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+        {% else %}
+            <tr><td colspan="{{ headers|length }}" class="empty-state">لا توجد نتائج لهذا الرقم</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+<div class="page-title">لوحة التحكم</div>
+<div class="page-subtitle">نظرة عامة على أداء مركز الصيانة اليوم</div>
+
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-value">{{ total_cars }}</div>
+        <div class="kpi-label">إجمالي السيارات المسجلة</div>
+    </div>
+    <div class="kpi-card warning">
+        <div class="kpi-value">{{ under_maintenance }}</div>
+        <div class="kpi-label">سيارات تحت الصيانة</div>
+    </div>
+    <div class="kpi-card success">
+        <div class="kpi-value">{{ finished_cars }}</div>
+        <div class="kpi-label">سيارات تم الانتهاء منها</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-value">{{ "%.0f"|format(stock_value) }}</div>
+        <div class="kpi-label">قيمة المخزون الحالي</div>
+    </div>
+    <div class="kpi-card success">
+        <div class="kpi-value">{{ "%.0f"|format(total_sales) }}</div>
+        <div class="kpi-label">إجمالي المبيعات (قطع الغيار)</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-value">{{ "%.0f"|format(total_purchases) }}</div>
+        <div class="kpi-label">إجمالي المشتريات</div>
+    </div>
+</div>
+
+{% if low_stock_parts %}
+<div class="fiori-card">
+    <div class="flex-between mb-2">
+        <strong>⚠️ تنبيهات نقص المخزون ({{ low_stock_parts|length }})</strong>
+        <a href="{{ url_for('reports.view_report', code='low_stock') }}" class="btn btn-outline btn-sm">عرض التقرير الكامل</a>
+    </div>
+    <div class="fiori-table-wrap">
+        <table class="fiori-table">
+            <thead><tr><th>الكود</th><th>اسم القطعة</th><th>الرصيد الحالي</th><th>أقل كمية</th></tr></thead>
+            <tbody>
+            {% for p in low_stock_parts[:8] %}
+                <tr><td>{{ p.code }}</td><td>{{ p.name }}</td><td><span class="badge badge-red">{{ p.total_balance }}</span></td><td>{{ p.min_quantity }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="form-grid">
+    <div class="fiori-card">
+        <strong>آخر السيارات المسجلة</strong>
+        <div class="fiori-table-wrap mt-2">
+            <table class="fiori-table">
+                <thead><tr><th>رقم الأمر</th><th>العميل</th><th>الحالة</th></tr></thead>
+                <tbody>
+                {% for v in recent_vehicles %}
+                    <tr>
+                        <td><a href="{{ url_for('vehicles.view_vehicle', vehicle_id=v.id) }}">{{ v.order_no }}</a></td>
+                        <td>{{ v.customer_name }}</td>
+                        <td><span class="badge badge-blue">{{ v.status_label }}</span></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-muted">لا توجد بيانات</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="fiori-card">
+        <strong>آخر حركات المخازن</strong>
+        <div class="fiori-table-wrap mt-2">
+            <table class="fiori-table">
+                <thead><tr><th>القطعة</th><th>النوع</th><th>الكمية</th></tr></thead>
+                <tbody>
+                {% for m in recent_movements %}
+                    <tr>
+                        <td>{{ m.part.name }}</td>
+                        <td>{{ m.type_label }}</td>
+                        <td>{{ m.quantity }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-muted">لا توجد بيانات</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

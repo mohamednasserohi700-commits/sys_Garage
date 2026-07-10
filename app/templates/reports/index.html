@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}التقارير{% endblock %}
+{% block content %}
+<div class="page-title">التقارير</div>
+<div class="page-subtitle">جميع التقارير الاحترافية للنظام مع إمكانية المعاينة والتصدير والطباعة</div>
+
+<div class="fiori-card">
+    <div class="form-grid">
+    {% for code, label in reports %}
+        <a href="{{ url_for('reports.view_report', code=code) }}" class="btn btn-outline" style="justify-content:flex-start;">📄 {{ label }}</a>
+    {% endfor %}
+    </div>
+</div>
+
+<div class="fiori-card">
+    <strong>تقرير عميل (بحث برقم الهاتف)</strong>
+    <form method="GET" action="{{ url_for('reports.customer_report') }}" class="search-bar mt-2">
+        <input type="text" name="phone" placeholder="رقم هاتف العميل">
+        <button class="btn btn-outline" type="submit">بحث</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}صلاحيات {{ role.name }}{% endblock %}
+{% block content %}
+<div class="page-title">صلاحيات الدور: {{ role.name }}</div>
+<form method="POST" class="fiori-card">
+    <div class="fiori-table-wrap">
+        <table class="fiori-table">
+            <thead><tr><th>الشاشة</th><th>عرض</th><th>إضافة</th><th>تعديل</th><th>حذف</th><th>طباعة</th><th>تصدير</th></tr></thead>
+            <tbody>
+            {% for p in permissions %}
+                {% set rp = existing.get(p.id) %}
+                <tr>
+                    <td>{{ p.name_ar }}</td>
+                    <td><input type="checkbox" name="perm_{{ p.id }}_view" {{ 'checked' if rp and rp.can_view }}></td>
+                    <td><input type="checkbox" name="perm_{{ p.id }}_add" {{ 'checked' if rp and rp.can_add }}></td>
+                    <td><input type="checkbox" name="perm_{{ p.id }}_edit" {{ 'checked' if rp and rp.can_edit }}></td>
+                    <td><input type="checkbox" name="perm_{{ p.id }}_delete" {{ 'checked' if rp and rp.can_delete }}></td>
+                    <td><input type="checkbox" name="perm_{{ p.id }}_print" {{ 'checked' if rp and rp.can_print }}></td>
+                    <td><input type="checkbox" name="perm_{{ p.id }}_export" {{ 'checked' if rp and rp.can_export }}></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">حفظ الصلاحيات</button>
+        <a href="{{ url_for('users.list_roles') }}" class="btn btn-outline">رجوع</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}الموردين{% endblock %}
+{% block content %}
+<div class="page-title">
+    إدارة الموردين
+    <a href="{{ url_for('suppliers.create_supplier') }}" class="btn btn-primary">+ مورد جديد</a>
+</div>
+<form class="search-bar" method="GET">
+    <input type="text" name="q" placeholder="بحث بالاسم / الهاتف" value="{{ q }}">
+    <button class="btn btn-outline" type="submit">بحث</button>
+</form>
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>الرقم الضريبي</th><th>الرصيد</th><th>الحالة</th><th class="no-print">إجراءات</th></tr></thead>
+        <tbody>
+        {% for s in suppliers %}
+            <tr>
+                <td><a href="{{ url_for('reports.supplier_report', supplier_id=s.id) }}">{{ s.name }}</a></td>
+                <td>{{ s.phone or '-' }}</td><td>{{ s.email or '-' }}</td><td>{{ s.tax_no or '-' }}</td>
+                <td>{{ "%.2f"|format(s.balance) }}</td>
+                <td>{% if s.is_active %}<span class="badge badge-green">نشط</span>{% else %}<span class="badge badge-gray">موقوف</span>{% endif %}</td>
+                <td class="no-print">
+                    <a href="{{ url_for('suppliers.edit_supplier', sid=s.id) }}" class="btn btn-outline btn-sm">تعديل</a>
+                    <form method="POST" action="{{ url_for('suppliers.delete_supplier', sid=s.id) }}" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المورد؟');">
+                        <button class="btn btn-danger btn-sm">حذف</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="7" class="empty-state">لا يوجد موردين</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% include "_print_header.html" %}
+<div class="page-title">
+    {{ title }}
+    <div class="no-print">
+        <a href="{{ url_for('reports.export_excel', code=code) }}" class="btn btn-outline btn-sm">تصدير Excel</a>
+        <a href="{{ url_for('reports.export_pdf', code=code) }}" class="btn btn-outline btn-sm">تصدير PDF</a>
+        <button onclick="window.print()" class="btn btn-primary btn-sm">طباعة</button>
+    </div>
+</div>
+<div class="fiori-card">
+    <div class="fiori-table-wrap">
+        <table class="fiori-table">
+            <thead><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+            {% else %}
+                <tr><td colspan="{{ headers|length }}" class="empty-state">لا توجد بيانات</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

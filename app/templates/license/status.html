@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}حالة الاشتراك{% endblock %}
+{% block content %}
+<div class="page-title">حالة الاشتراك والتفعيل</div>
+{% if lic %}
+<div class="fiori-card">
+    <div class="form-grid">
+        <div><label>اسم الشركة</label><div>{{ lic.company_name }}</div></div>
+        <div><label>نوع الاشتراك</label><div>{{ 'سنة' if lic.plan=='year' else '6 أشهر' }}</div></div>
+        <div><label>تاريخ التفعيل</label><div>{{ lic.activated_at.strftime('%Y-%m-%d') }}</div></div>
+        <div><label>تاريخ الانتهاء</label><div>{{ lic.expires_at.strftime('%Y-%m-%d') }}</div></div>
+        <div><label>الحالة</label><div>
+            {% if lic.is_expired %}<span class="badge badge-red">منتهي</span>
+            {% elif lic.days_remaining <= 15 %}<span class="badge badge-orange">ينتهي قريبًا ({{ lic.days_remaining }} يوم)</span>
+            {% else %}<span class="badge badge-green">نشط ({{ lic.days_remaining }} يوم متبقي)</span>{% endif %}
+        </div></div>
+    </div>
+</div>
+{% else %}
+<div class="empty-state">لا يوجد اشتراك مفعّل حاليًا</div>
+{% endif %}
+<a href="{{ url_for('license.activate') }}" class="btn btn-outline">إدخال / تحديث مفتاح التفعيل</a>
+{% endblock %}

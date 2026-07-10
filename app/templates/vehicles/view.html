@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}أمر الصيانة {{ vehicle.order_no }}{% endblock %}
+{% block content %}
+{% include "_print_header.html" %}
+<div class="page-title">
+    أمر الصيانة {{ vehicle.order_no }}
+    <div class="no-print">
+        <a href="{{ url_for('vehicles.edit_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-outline btn-sm">تعديل</a>
+        <a href="{{ url_for('reports.vehicle_report', vehicle_id=vehicle.id) }}" class="btn btn-outline btn-sm">تقرير السيارة</a>
+        <button onclick="window.print()" class="btn btn-outline btn-sm">طباعة</button>
+    </div>
+</div>
+
+<div class="fiori-card">
+    <div class="form-grid">
+        <div><label>العميل</label><div>{{ vehicle.customer_name }}</div></div>
+        <div><label>الهاتف</label><div>{{ vehicle.customer_phone }}</div></div>
+        <div><label>نوع السيارة</label><div>{{ vehicle.car_type }} {{ vehicle.car_model or '' }}</div></div>
+        <div><label>اللوحة</label><div>{{ vehicle.plate_no }}</div></div>
+        <div><label>الشاسيه</label><div>{{ vehicle.chassis_no or '-' }}</div></div>
+        <div><label>اللون</label><div>{{ vehicle.color or '-' }}</div></div>
+        <div><label>العداد</label><div>{{ vehicle.odometer }}</div></div>
+        <div><label>الفني</label><div>{{ vehicle.technician.full_name if vehicle.technician else '-' }}</div></div>
+        <div><label>الحالة</label><div><span class="badge badge-blue">{{ vehicle.status_label }}</span></div></div>
+        <div><label>تاريخ الدخول</label><div>{{ vehicle.entry_date.strftime('%Y-%m-%d') if vehicle.entry_date }}</div></div>
+        <div><label>التسليم المتوقع</label><div>{{ vehicle.expected_delivery_date.strftime('%Y-%m-%d') if vehicle.expected_delivery_date else '-' }}</div></div>
+    </div>
+    {% if vehicle.notes %}<div class="mt-2"><label>ملاحظات</label><div>{{ vehicle.notes }}</div></div>{% endif %}
+</div>
+
+<div class="fiori-tabs no-print">
+    <div class="tab-btn active" onclick="showTab('faults')">الأعطال ({{ vehicle.faults|length }})</div>
+    <div class="tab-btn" onclick="showTab('parts')">قطع الغيار المركبة ({{ vehicle.parts_used|length }})</div>
+</div>
+
+<div id="tab-faults" class="tab-pane active">
+    <div class="fiori-card">
+        <strong>تسجيل عطل جديد</strong>
+        <form method="POST" action="{{ url_for('vehicles.add_fault', vehicle_id=vehicle.id) }}" class="form-grid mt-2">
+            <div class="form-group full">
+                <label class="required">وصف العطل</label>
+                <input type="text" name="description" required>
+            </div>
+            <div class="form-group full">
+                <label>ملاحظات الفني</label>
+                <textarea name="technician_notes" rows="2"></textarea>
+            </div>
+            <div class="form-group"><button type="submit" class="btn btn-primary">إضافة العطل</button></div>
+        </form>
+    </div>
+    <div class="fiori-card">
+        <table class="fiori-table">
+            <thead><tr><th>الوصف</th><th>ملاحظات الفني</th><th>التاريخ</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody>
+            {% for f in vehicle.faults %}
+                <tr>
+                    <td>{{ f.description }}</td>
+                    <td>{{ f.technician_notes or '-' }}</td>
+                    <td>{{ f.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="no-print">
+                        <form method="POST" action="{{ url_for('vehicles.delete_fault', fault_id=f.id) }}" onsubmit="return confirm('حذف هذا العطل؟');">
+                            <button class="btn btn-danger btn-sm">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4" class="text-muted">لا توجد أعطال مسجلة</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="tab-parts" class="tab-pane">
+    <div class="fiori-card no-print">
+        <strong>تركيب قطعة غيار (يتم الخصم تلقائياً من المخزن المختار)</strong>
+        <form method="POST" action="{{ url_for('vehicles.add_part_to_vehicle', vehicle_id=vehicle.id) }}" class="mt-2">
+            <div class="parts-row-grid">
+                <div class="form-group">
+                    <label>القطعة</label>
+                    <select name="part_id" required>
+                        {% for p in parts %}
+                        <option value="{{ p.id }}">{{ p.name }} ({{ p.code }}) - المتاح: {{ p.total_balance }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>المخزن</label>
+                    <select name="warehouse_id" required>
+                        {% for w in warehouses %}
+                        <option value="{{ w.id }}">{{ w.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group"><label>الكمية</label><input type="number" name="quantity" min="1" value="1" required></div>
+                <div class="form-group"><button type="submit" class="btn btn-primary">إضافة</button></div>
+            </div>
+        </form>
+    </div>
+    <div class="fiori-card">
+        <table class="fiori-table">
+            <thead><tr><th>القطعة</th><th>الكمية</th><th>سعر التكلفة</th><th>سعر البيع</th><th>الإجمالي</th><th>المخزن</th><th>التاريخ</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody>
+            {% for w in vehicle.parts_used %}
+                <tr>
+                    <td>{{ w.part.name }}</td>
+                    <td>{{ w.quantity }}</td>
+                    <td>{{ "%.2f"|format(w.unit_cost) }}</td>
+                    <td>{{ "%.2f"|format(w.unit_price) }}</td>
+                    <td>{{ "%.2f"|format(w.total_price) }}</td>
+                    <td>{{ w.warehouse.name }}</td>
+                    <td>{{ w.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="no-print">
+                        <form method="POST" action="{{ url_for('vehicles.remove_part_from_vehicle', wop_id=w.id) }}" onsubmit="return confirm('سيتم إلغاء الصرف وإعادة الكمية للمخزون. متابعة؟');">
+                            <button class="btn btn-danger btn-sm">إلغاء</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="8" class="text-muted">لا توجد قطع غيار مركبة</td></tr>
+            {% endfor %}
+            </tbody>
+            {% if vehicle.parts_used %}
+            <tfoot><tr><td colspan="4"><strong>الإجمالي</strong></td><td><strong>{{ "%.2f"|format(vehicle.total_parts_sale) }}</strong></td><td colspan="3"></td></tr></tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<script>
+function showTab(name) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %}

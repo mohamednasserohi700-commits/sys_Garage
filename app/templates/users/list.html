@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}المستخدمين{% endblock %}
+{% block content %}
+<div class="page-title">
+    إدارة المستخدمين
+    <div class="no-print">
+        <a href="{{ url_for('users.list_roles') }}" class="btn btn-outline">الأدوار والصلاحيات</a>
+        <a href="{{ url_for('users.create_user') }}" class="btn btn-primary">+ مستخدم جديد</a>
+    </div>
+</div>
+<form class="search-bar" method="GET">
+    <input type="text" name="q" placeholder="بحث بالاسم / اسم المستخدم" value="{{ q }}">
+    <button class="btn btn-outline" type="submit">بحث</button>
+</form>
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr><th>الاسم</th><th>اسم المستخدم</th><th>الدور</th><th>الهاتف</th><th>الحالة</th><th class="no-print">إجراءات</th></tr></thead>
+        <tbody>
+        {% for u in users %}
+            <tr>
+                <td>{{ u.full_name }}</td><td>{{ u.username }}</td><td>{{ u.role.name if u.role else '-' }}</td>
+                <td>{{ u.phone or '-' }}</td>
+                <td>{% if u.is_active_user %}<span class="badge badge-green">نشط</span>{% else %}<span class="badge badge-gray">موقوف</span>{% endif %}</td>
+                <td class="no-print">
+                    <a href="{{ url_for('users.edit_user', uid=u.id) }}" class="btn btn-outline btn-sm">تعديل</a>
+                    <form method="POST" action="{{ url_for('users.delete_user', uid=u.id) }}" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟');">
+                        <button class="btn btn-danger btn-sm">حذف</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" class="empty-state">لا يوجد مستخدمين</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

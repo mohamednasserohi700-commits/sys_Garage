@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}مورد{% endblock %}
+{% block content %}
+<div class="page-title">{{ 'تعديل مورد' if supplier else 'مورد جديد' }}</div>
+<form method="POST" class="fiori-card">
+    <div class="form-grid">
+        <div class="form-group"><label class="required">الاسم</label><input type="text" name="name" value="{{ supplier.name if supplier else '' }}" required></div>
+        <div class="form-group"><label>الهاتف</label><input type="text" name="phone" value="{{ supplier.phone if supplier else '' }}"></div>
+        <div class="form-group"><label>البريد الإلكتروني</label><input type="email" name="email" value="{{ supplier.email if supplier else '' }}"></div>
+        <div class="form-group"><label>الرقم الضريبي</label><input type="text" name="tax_no" value="{{ supplier.tax_no if supplier else '' }}"></div>
+        <div class="form-group full"><label>العنوان</label><input type="text" name="address" value="{{ supplier.address if supplier else '' }}"></div>
+        <div class="form-group full"><label>ملاحظات</label><textarea name="notes" rows="2">{{ supplier.notes if supplier else '' }}</textarea></div>
+        {% if supplier %}
+        <div class="form-group"><input type="checkbox" name="is_active" id="ia" {{ 'checked' if supplier.is_active }}> <label for="ia" style="display:inline">نشط</label></div>
+        {% endif %}
+    </div>
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="{{ url_for('suppliers.list_suppliers') }}" class="btn btn-outline">إلغاء</a>
+    </div>
+</form>
+{% endblock %}

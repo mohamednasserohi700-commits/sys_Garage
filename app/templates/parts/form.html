@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ 'تعديل قطعة' if part else 'قطعة جديدة' }}{% endblock %}
+{% block content %}
+<div class="page-title">{{ 'تعديل قطعة غيار' if part else 'قطعة غيار جديدة' }}</div>
+<form method="POST" class="fiori-card">
+    <div class="form-grid">
+        {% if part %}<div class="form-group"><label>الكود</label><input type="text" value="{{ part.code }}" disabled></div>{% endif %}
+        <div class="form-group">
+            <label class="required">اسم القطعة</label>
+            <input type="text" name="name" value="{{ part.name if part else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label>الباركود</label>
+            <input type="text" name="barcode" value="{{ part.barcode if part else '' }}">
+        </div>
+        <div class="form-group">
+            <label>الفئة</label>
+            <select name="category_id">
+                <option value="">-- بدون --</option>
+                {% for c in categories %}
+                <option value="{{ c.id }}" {{ 'selected' if part and part.category_id==c.id }}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>الوحدة</label>
+            <input type="text" name="unit" value="{{ part.unit if part else 'قطعة' }}">
+        </div>
+        <div class="form-group">
+            <label>أقل كمية (حد إعادة الطلب)</label>
+            <input type="number" name="min_quantity" value="{{ part.min_quantity if part else 1 }}">
+        </div>
+        <div class="form-group">
+            <label>سعر الشراء</label>
+            <input type="number" step="0.01" name="purchase_price" value="{{ part.purchase_price if part else 0 }}">
+        </div>
+        <div class="form-group">
+            <label>سعر البيع</label>
+            <input type="number" step="0.01" name="sale_price" value="{{ part.sale_price if part else 0 }}">
+        </div>
+        <div class="form-group">
+            <label>المورد</label>
+            <select name="supplier_id">
+                <option value="">-- بدون --</option>
+                {% for s in suppliers %}
+                <option value="{{ s.id }}" {{ 'selected' if part and part.supplier_id==s.id }}>{{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if part %}
+        <div class="form-group">
+            <label>الحالة</label>
+            <div><input type="checkbox" name="is_active" id="is_active" {{ 'checked' if part.is_active }}> <label for="is_active" style="display:inline;">نشطة</label></div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="{{ url_for('parts.list_parts') }}" class="btn btn-outline">إلغاء</a>
+    </div>
+</form>
+{% endblock %}

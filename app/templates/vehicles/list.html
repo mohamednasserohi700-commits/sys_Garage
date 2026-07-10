@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}إدارة السيارات{% endblock %}
+{% block content %}
+<div class="page-title">
+    إدارة السيارات
+    <a href="{{ url_for('vehicles.create_vehicle') }}" class="btn btn-primary">+ أمر صيانة جديد</a>
+</div>
+<div class="page-subtitle">إدارة أوامر الصيانة وبيانات السيارات والعملاء</div>
+
+<form class="search-bar" method="GET">
+    <input type="text" name="q" placeholder="بحث برقم الأمر / العميل / الهاتف / اللوحة / الشاسيه" value="{{ q }}">
+    <select name="status">
+        <option value="">كل الحالات</option>
+        {% for code, label in statuses.items() %}
+        <option value="{{ code }}" {{ 'selected' if status==code }}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-outline" type="submit">بحث</button>
+</form>
+
+<div class="fiori-card">
+    <div class="fiori-table-wrap">
+        <table class="fiori-table">
+            <thead>
+                <tr>
+                    <th>رقم الأمر</th><th>العميل</th><th>الهاتف</th><th>نوع السيارة</th>
+                    <th>اللوحة</th><th>الفني</th><th>الحالة</th><th>تاريخ الدخول</th><th class="no-print">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for v in vehicles %}
+                <tr>
+                    <td><a href="{{ url_for('vehicles.view_vehicle', vehicle_id=v.id) }}">{{ v.order_no }}</a></td>
+                    <td>{{ v.customer_name }}</td>
+                    <td>{{ v.customer_phone }}</td>
+                    <td>{{ v.car_type }} {{ v.car_model or '' }}</td>
+                    <td>{{ v.plate_no }}</td>
+                    <td>{{ v.technician.full_name if v.technician else '-' }}</td>
+                    <td>
+                        {% if v.status == 'finished' or v.status == 'delivered' %}<span class="badge badge-green">{{ v.status_label }}</span>
+                        {% elif v.status == 'waiting_parts' %}<span class="badge badge-orange">{{ v.status_label }}</span>
+                        {% else %}<span class="badge badge-blue">{{ v.status_label }}</span>{% endif %}
+                    </td>
+                    <td>{{ v.entry_date.strftime('%Y-%m-%d') if v.entry_date else '-' }}</td>
+                    <td class="no-print">
+                        <a href="{{ url_for('vehicles.view_vehicle', vehicle_id=v.id) }}" class="btn btn-outline btn-sm">عرض</a>
+                        <a href="{{ url_for('vehicles.edit_vehicle', vehicle_id=v.id) }}" class="btn btn-outline btn-sm">تعديل</a>
+                        <form method="POST" action="{{ url_for('vehicles.delete_vehicle', vehicle_id=v.id) }}" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف أمر الصيانة هذا؟ لا يمكن التراجع عن هذا الإجراء.');">
+                            <button type="submit" class="btn btn-danger btn-sm">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="9" class="empty-state">لا توجد سيارات مطابقة</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

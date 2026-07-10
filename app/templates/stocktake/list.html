@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}الجرد الفعلي{% endblock %}
+{% block content %}
+<div class="page-title">
+    الجرد الفعلي
+    <a href="{{ url_for('stocktake.create_stocktake') }}" class="btn btn-primary">+ سند جرد جديد</a>
+</div>
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr><th>رقم الجرد</th><th>المخزن</th><th>التاريخ</th><th>عدد الأصناف</th></tr></thead>
+        <tbody>
+        {% for t in takes %}
+            <tr><td>{{ t.take_no }}</td><td>{{ t.warehouse.name }}</td><td>{{ t.take_date.strftime('%Y-%m-%d') }}</td><td>{{ t.items|length }}</td></tr>
+        {% else %}
+            <tr><td colspan="4" class="empty-state">لا توجد سندات جرد</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}التحويل بين المخازن{% endblock %}
+{% block content %}
+<div class="page-title">
+    التحويل بين المخازن
+    <a href="{{ url_for('transfers.create_transfer') }}" class="btn btn-primary">+ سند تحويل جديد</a>
+</div>
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr><th>رقم التحويل</th><th>من مخزن</th><th>إلى مخزن</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+        <tbody>
+        {% for t in transfers %}
+            <tr>
+                <td>{{ t.transfer_no }}</td><td>{{ t.from_warehouse.name }}</td><td>{{ t.to_warehouse.name }}</td>
+                <td>{{ t.transfer_date.strftime('%Y-%m-%d') }}</td>
+                <td>{% if t.is_approved %}<span class="badge badge-green">معتمد</span>{% else %}<span class="badge badge-orange">قيد الاعتماد</span>{% endif %}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5" class="empty-state">لا توجد سندات تحويل</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ 'تعديل' if vehicle else 'أمر صيانة جديد' }}{% endblock %}
+{% block content %}
+<div class="page-title">{{ 'تعديل بيانات السيارة' if vehicle else 'أمر صيانة جديد' }}</div>
+
+<form method="POST" class="fiori-card">
+    <div class="form-grid">
+        <div class="form-group">
+            <label class="required">اسم العميل</label>
+            <input type="text" name="customer_name" value="{{ vehicle.customer_name if vehicle else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label class="required">رقم الهاتف</label>
+            <input type="text" name="customer_phone" value="{{ vehicle.customer_phone if vehicle else '' }}" required>
+        </div>
+        <div class="form-group full">
+            <label>العنوان</label>
+            <input type="text" name="customer_address" value="{{ vehicle.customer_address if vehicle else '' }}">
+        </div>
+        <div class="form-group">
+            <label class="required">نوع السيارة</label>
+            <input type="text" name="car_type" value="{{ vehicle.car_type if vehicle else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label>الموديل</label>
+            <input type="text" name="car_model" value="{{ vehicle.car_model if vehicle else '' }}">
+        </div>
+        <div class="form-group">
+            <label class="required">رقم اللوحة</label>
+            <input type="text" name="plate_no" value="{{ vehicle.plate_no if vehicle else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label>رقم الشاسيه</label>
+            <input type="text" name="chassis_no" value="{{ vehicle.chassis_no if vehicle else '' }}">
+        </div>
+        <div class="form-group">
+            <label>اللون</label>
+            <input type="text" name="color" value="{{ vehicle.color if vehicle else '' }}">
+        </div>
+        <div class="form-group">
+            <label>العداد (كم)</label>
+            <input type="number" name="odometer" value="{{ vehicle.odometer if vehicle else 0 }}">
+        </div>
+        <div class="form-group">
+            <label>تاريخ التسليم المتوقع</label>
+            <input type="date" name="expected_delivery_date" value="{{ vehicle.expected_delivery_date.strftime('%Y-%m-%d') if vehicle and vehicle.expected_delivery_date else '' }}">
+        </div>
+        <div class="form-group">
+            <label>الفني المسؤول</label>
+            <select name="technician_id">
+                <option value="">-- بدون --</option>
+                {% for t in technicians %}
+                <option value="{{ t.id }}" {{ 'selected' if vehicle and vehicle.technician_id==t.id }}>{{ t.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if vehicle %}
+        <div class="form-group">
+            <label>حالة السيارة</label>
+            <select name="status">
+                <option value="under_maintenance" {{ 'selected' if vehicle.status=='under_maintenance' }}>تحت الصيانة</option>
+                <option value="waiting_parts" {{ 'selected' if vehicle.status=='waiting_parts' }}>بانتظار قطع غيار</option>
+                <option value="finished" {{ 'selected' if vehicle.status=='finished' }}>تم الانتهاء</option>
+                <option value="delivered" {{ 'selected' if vehicle.status=='delivered' }}>تم التسليم</option>
+            </select>
+        </div>
+        {% endif %}
+        <div class="form-group full">
+            <label>ملاحظات</label>
+            <textarea name="notes" rows="3">{{ vehicle.notes if vehicle else '' }}</textarea>
+        </div>
+    </div>
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">حفظ</button>
+        <a href="{{ url_for('vehicles.list_vehicles') }}" class="btn btn-outline">إلغاء</a>
+    </div>
+</form>
+{% endblock %}

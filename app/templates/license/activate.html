@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفعيل النظام</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fiori.css') }}">
+</head>
+<body>
+<div class="login-wrap">
+    <div class="login-card" style="width:440px;">
+        <h1>🔑 تفعيل النظام</h1>
+        <p class="sub">انتهت صلاحية الاشتراك أو لم يتم تفعيل النظام بعد</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-box flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-group mb-2">
+                <label class="required">مفتاح التفعيل</label>
+                <textarea name="activation_key" rows="4" required placeholder="الصق مفتاح التفعيل هنا"></textarea>
+            </div>
+            <div class="form-group mb-2">
+                <label>بصمة هذا الجهاز (أرسلها لمزود النظام للحصول على المفتاح)</label>
+                <input type="text" value="{{ fingerprint }}" readonly onclick="this.select()">
+            </div>
+            <button type="submit" class="btn btn-primary">تفعيل</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}المخازن{% endblock %}
+{% block content %}
+<div class="page-title">
+    إدارة المخازن
+    <a href="{{ url_for('warehouses.create_warehouse') }}" class="btn btn-primary">+ مخزن جديد</a>
+</div>
+<form class="search-bar" method="GET">
+    <input type="text" name="q" placeholder="بحث بالاسم / الكود" value="{{ q }}">
+    <button class="btn btn-outline" type="submit">بحث</button>
+</form>
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr><th>الكود</th><th>الاسم</th><th>المسؤول</th><th>العنوان</th><th>الحالة</th><th class="no-print">إجراءات</th></tr></thead>
+        <tbody>
+        {% for w in warehouses %}
+            <tr>
+                <td>{{ w.code }}</td><td>{{ w.name }}</td><td>{{ w.manager_name or '-' }}</td><td>{{ w.address or '-' }}</td>
+                <td>{% if w.is_active %}<span class="badge badge-green">نشط</span>{% else %}<span class="badge badge-gray">موقوف</span>{% endif %}</td>
+                <td class="no-print">
+                    <a href="{{ url_for('warehouses.warehouse_movements', wid=w.id) }}" class="btn btn-outline btn-sm">الحركات</a>
+                    <a href="{{ url_for('warehouses.edit_warehouse', wid=w.id) }}" class="btn btn-outline btn-sm">تعديل</a>
+                    <form method="POST" action="{{ url_for('warehouses.delete_warehouse', wid=w.id) }}" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المخزن؟');">
+                        <button class="btn btn-danger btn-sm">حذف</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" class="empty-state">لا توجد مخازن</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

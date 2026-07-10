@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}قطع الغيار{% endblock %}
+{% block content %}
+<div class="page-title">
+    إدارة قطع الغيار
+    <div class="no-print">
+        <a href="{{ url_for('parts.import_excel') }}" class="btn btn-outline">استيراد Excel</a>
+        <a href="{{ url_for('parts.create_part') }}" class="btn btn-primary">+ قطعة جديدة</a>
+    </div>
+</div>
+
+<form class="search-bar" method="GET">
+    <input type="text" name="q" placeholder="بحث بالاسم / الكود / الباركود" value="{{ q }}">
+    <button class="btn btn-outline" type="submit">بحث</button>
+</form>
+
+<div class="fiori-card">
+    <div class="fiori-table-wrap">
+        <table class="fiori-table">
+            <thead>
+                <tr><th>الكود</th><th>الاسم</th><th>الفئة</th><th>الوحدة</th><th>سعر الشراء</th><th>سعر البيع</th><th>الرصيد</th><th class="no-print">إجراءات</th></tr>
+            </thead>
+            <tbody>
+            {% for p in parts %}
+                <tr>
+                    <td>{{ p.code }}</td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.category.name if p.category else '-' }}</td>
+                    <td>{{ p.unit }}</td>
+                    <td>{{ "%.2f"|format(p.purchase_price) }}</td>
+                    <td>{{ "%.2f"|format(p.sale_price) }}</td>
+                    <td>
+                        {% if p.is_low_stock %}<span class="badge badge-red">{{ p.total_balance }}</span>
+                        {% else %}<span class="badge badge-green">{{ p.total_balance }}</span>{% endif %}
+                    </td>
+                    <td class="no-print">
+                        <a href="{{ url_for('parts.edit_part', part_id=p.id) }}" class="btn btn-outline btn-sm">تعديل</a>
+                        <form method="POST" action="{{ url_for('parts.delete_part', part_id=p.id) }}" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه القطعة؟');">
+                            <button class="btn btn-danger btn-sm">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="8" class="empty-state">لا توجد قطع غيار</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}فواتير الشراء{% endblock %}
+{% block content %}
+<div class="page-title">
+    فواتير الشراء
+    <a href="{{ url_for('purchases.create_purchase') }}" class="btn btn-primary">+ فاتورة شراء جديدة</a>
+</div>
+<div class="fiori-card">
+    <table class="fiori-table">
+        <thead><tr><th>رقم الفاتورة</th><th>المورد</th><th>المخزن</th><th>التاريخ</th><th>الإجمالي</th><th class="no-print">إجراءات</th></tr></thead>
+        <tbody>
+        {% for i in invoices %}
+            <tr>
+                <td>{{ i.invoice_no }}</td><td>{{ i.supplier.name }}</td><td>{{ i.warehouse.name }}</td>
+                <td>{{ i.invoice_date.strftime('%Y-%m-%d') }}</td><td>{{ "%.2f"|format(i.total) }}</td>
+                <td class="no-print"><a href="{{ url_for('purchases.view_purchase', invoice_id=i.id) }}" class="btn btn-outline btn-sm">عرض</a></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" class="empty-state">لا توجد فواتير</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
