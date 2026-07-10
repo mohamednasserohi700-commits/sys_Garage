@@ -172,30 +172,50 @@ def delete_fault(fault_id):
 @login_required
 def add_part_to_vehicle(vehicle_id):
     v = Vehicle.query.get_or_404(vehicle_id)
+
+    # يدعم إضافة أكثر من قطعة في نفس الوقت (part_id[], warehouse_id[], quantity[])
+    # مع الحفاظ على التوافق مع الإرسال القديم لحقل واحد فقط
+    part_ids = request.form.getlist("part_id[]") or request.form.getlist("part_id")
+    warehouse_ids = request.form.getlist("warehouse_id[]") or request.form.getlist("warehouse_id")
+    quantities = request.form.getlist("quantity[]") or request.form.getlist("quantity")
+
+    if not part_ids:
+        flash("يجب اختيار قطعة واحدة على الأقل", "danger")
+        return redirect(url_for("vehicles.view_vehicle", vehicle_id=vehicle_id))
+
+    added_count = 0
     try:
-        part_id = int(request.form["part_id"])
-        warehouse_id = int(request.form["warehouse_id"])
-        quantity = int(request.form["quantity"])
-        part = Part.query.get_or_404(part_id)
+        for pid, wid, qty in zip(part_ids, warehouse_ids, quantities):
+            if not pid or not wid or not qty:
+                continue
+            part_id = int(pid)
+            warehouse_id = int(wid)
+            quantity = int(qty)
+            part = Part.query.get_or_404(part_id)
 
-        if quantity <= 0:
-            raise BusinessError("الكمية يجب أن تكون أكبر من صفر")
+            if quantity <= 0:
+                raise BusinessError(f"الكمية يجب أن تكون أكبر من صفر للقطعة '{part.name}'")
 
-        # خصم تلقائي من المخزن (يمنع الصرف عند عدم توفر الكمية)
-        stock_service.issue_stock(
-            part_id=part_id, warehouse_id=warehouse_id, quantity=quantity,
-            movement_type="out_workorder", reference_no=v.order_no,
-            user_id=current_user.id, part_name=part.name,
-        )
+            # خصم تلقائي من المخزن (يمنع الصرف عند عدم توفر الكمية)
+            stock_service.issue_stock(
+                part_id=part_id, warehouse_id=warehouse_id, quantity=quantity,
+                movement_type="out_workorder", reference_no=v.order_no,
+                user_id=current_user.id, part_name=part.name,
+            )
 
-        wop = WorkOrderPart(
-            vehicle_id=v.id, part_id=part_id, warehouse_id=warehouse_id, quantity=quantity,
-            unit_cost=part.purchase_price, unit_price=part.sale_price,
-            technician_id=current_user.id,
-        )
-        db.session.add(wop)
+            wop = WorkOrderPart(
+                vehicle_id=v.id, part_id=part_id, warehouse_id=warehouse_id, quantity=quantity,
+                unit_cost=part.purchase_price, unit_price=part.sale_price,
+                technician_id=current_user.id,
+            )
+            db.session.add(wop)
+            added_count += 1
+
+        if added_count == 0:
+            raise BusinessError("يجب اختيار قطعة واحدة على الأقل")
+
         db.session.commit()
-        flash(f"تم صرف {quantity} من '{part.name}' وربطها بأمر الصيانة", "success")
+        flash(f"تم صرف {added_count} قطعة/قطع وربطها بأمر الصيانة", "success")
     except BusinessError as e:
         db.session.rollback()
         flash(str(e), "danger")
