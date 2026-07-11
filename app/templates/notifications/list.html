@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}الإشعارات{% endblock %}
+{% block content %}
+<div class="page-title">
+    الإشعارات {% if unread_count %}<span class="badge badge-red">{{ unread_count }} غير مقروء</span>{% endif %}
+    <div class="no-print">
+        <form method="POST" action="{{ url_for('notifications.mark_all_read') }}" style="display:inline">
+            <button class="btn btn-outline btn-sm" {{ 'disabled' if not unread_count }}>✔️ تعليم الكل كمقروء</button>
+        </form>
+    </div>
+</div>
+
+<form class="search-bar" method="GET">
+    <select name="type" onchange="this.form.submit()">
+        <option value="">كل الأنواع</option>
+        <option value="delivery_due" {{ 'selected' if filter_type=='delivery_due' }}>مواعيد التسليم</option>
+        <option value="low_stock" {{ 'selected' if filter_type=='low_stock' }}>نقص المخزون</option>
+        <option value="system_error" {{ 'selected' if filter_type=='system_error' }}>أخطاء النظام</option>
+    </select>
+</form>
+
+<div class="fiori-card">
+    {% if items %}
+    <div class="notif-list">
+        {% for n in items %}
+        <div class="notif-row severity-{{ n.severity }} {{ 'unread' if not n.is_read }}">
+            <div class="notif-icon">{{ n.icon }}</div>
+            <div class="notif-body">
+                <div class="notif-title">{{ n.title }}</div>
+                <div class="notif-message">{{ n.message }}</div>
+                <div class="notif-meta">
+                    <span class="badge badge-gray">{{ n.type_label }}</span>
+                    <span class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    {% if n.occurrence_count and n.occurrence_count > 1 %}
+                    <span class="text-muted">(تكرر {{ n.occurrence_count }} مرة)</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="notif-actions no-print">
+                {% if n.link_url %}
+                <a href="{{ n.link_url }}" class="btn btn-outline btn-sm">عرض</a>
+                {% endif %}
+                {% if not n.is_read %}
+                <form method="POST" action="{{ url_for('notifications.mark_read', notification_id=n.id) }}">
+                    <button class="btn btn-outline btn-sm">تعليم كمقروء</button>
+                </form>
+                {% endif %}
+                <form method="POST" action="{{ url_for('notifications.delete_notification', notification_id=n.id) }}" onsubmit="return confirm('حذف هذا الإشعار؟');">
+                    <button class="btn btn-danger btn-sm">حذف</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">لا توجد إشعارات حالياً 🎉</div>
+    {% endif %}
+</div>
+{% endblock %}
