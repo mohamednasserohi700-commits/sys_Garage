@@ -81,6 +81,8 @@ def create_vehicle():
         except Exception as e:
             db.session.rollback()
             flash(f"حدث خطأ غير متوقع: {e}", "danger")
+            from app.services.notification_service import log_system_error
+            log_system_error(f"خطأ عند إنشاء أمر صيانة: {e}")
     return render_template("vehicles/form.html", vehicle=None, technicians=technicians)
 
 
@@ -112,6 +114,8 @@ def edit_vehicle(vehicle_id):
         except Exception as e:
             db.session.rollback()
             flash(f"حدث خطأ: {e}", "danger")
+            from app.services.notification_service import log_system_error
+            log_system_error(f"خطأ عند تعديل أمر صيانة #{vehicle_id}: {e}")
     return render_template("vehicles/form.html", vehicle=v, technicians=technicians)
 
 
@@ -222,6 +226,8 @@ def add_part_to_vehicle(vehicle_id):
     except Exception as e:
         db.session.rollback()
         flash(f"حدث خطأ: {e}", "danger")
+        from app.services.notification_service import log_system_error
+        log_system_error(f"خطأ عند تركيب قطع غيار على أمر صيانة #{vehicle_id}: {e}")
     return redirect(url_for("vehicles.view_vehicle", vehicle_id=vehicle_id))
 
 
