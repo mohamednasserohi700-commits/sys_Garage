@@ -21,6 +21,13 @@ def create_app(config_class=Config):
 
     setup_logging(app)
 
+    with app.app_context():
+        # ينشئ أي جداول جديدة (مثل الإشعارات) تلقائيًا دون الحاجة لإعادة تشغيل seed.py
+        try:
+            db.create_all()
+        except Exception:
+            pass
+
     from app.models import User
 
     @login_manager.user_loader
@@ -42,6 +49,7 @@ def create_app(config_class=Config):
     from app.blueprints.users.routes import users_bp
     from app.blueprints.settings.routes import settings_bp
     from app.blueprints.license.routes import license_bp
+    from app.blueprints.notifications.routes import notifications_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(dashboard_bp, url_prefix="/")
@@ -57,6 +65,7 @@ def create_app(config_class=Config):
     app.register_blueprint(users_bp, url_prefix="/users")
     app.register_blueprint(settings_bp, url_prefix="/settings")
     app.register_blueprint(license_bp, url_prefix="/license")
+    app.register_blueprint(notifications_bp, url_prefix="/notifications")
 
     # ---------------- التحقق من الترخيص قبل كل طلب ----------------
     @app.before_request
@@ -84,6 +93,18 @@ def create_app(config_class=Config):
         lic = License.query.first()
         return {"license_days_remaining": lic.days_remaining if lic and not lic.is_expired else None}
 
+    @app.context_processor
+    def inject_notifications():
+        from flask_login import current_user as _cu
+        if not _cu.is_authenticated:
+            return {"unread_notifications_count": 0}
+        try:
+            from app.services import notification_service
+            notification_service.generate_notifications()
+            return {"unread_notifications_count": notification_service.get_unread_count()}
+        except Exception:
+            return {"unread_notifications_count": 0}
+
     # ---------------- معالجة الأخطاء ----------------
     @app.errorhandler(403)
     def forbidden(e):
@@ -96,6 +117,24 @@ def create_app(config_class=Config):
     @app.errorhandler(500)
     def server_error(e):
         app.logger.error(f"Server Error: {e}")
+        try:
+            from app.services.notification_service import log_system_error
+            log_system_error(str(e))
+        except Exception:
+            pass
+        return render_template("errors/500.html"), 500
+
+    @app.errorhandler(Exception)
+    def handle_unexpected_exception(e):
+        from werkzeug.exceptions import HTTPException
+        if isinstance(e, HTTPException):
+            return e
+        app.logger.error(f"Unhandled Exception: {e}")
+        try:
+            from app.services.notification_service import log_system_error
+            log_system_error(str(e))
+        except Exception:
+            pass
         return render_template("errors/500.html"), 500
 
     return app
