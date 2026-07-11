@@ -9,13 +9,16 @@
 </head>
 <body>
     <header class="fiori-header">
-        <div class="brand">
-            {% if company and company.logo_path %}
-            <img src="{{ url_for('static', filename=company.logo_path) }}" alt="شعار" style="height:30px;width:30px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;">
-            {% else %}
-            🔧
-            {% endif %}
-            <span>{{ company.company_name if company and company.company_name else 'نظام إدارة مركز الصيانة' }}</span>
+        <div style="display:flex;align-items:center;">
+            <button type="button" class="menu-toggle-btn" id="menuToggleBtn" aria-label="القائمة">☰</button>
+            <div class="brand">
+                {% if company and company.logo_path %}
+                <img src="{{ url_for('static', filename=company.logo_path) }}" alt="شعار" style="height:30px;width:30px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;">
+                {% else %}
+                🔧
+                {% endif %}
+                <span>{{ company.company_name if company and company.company_name else 'نظام إدارة مركز الصيانة' }}</span>
+            </div>
         </div>
         <div class="user-box">
             {% if license_days_remaining is defined and license_days_remaining is not none %}
@@ -27,15 +30,42 @@
                 <span class="badge badge-green">الاشتراك سارٍ - متبقي {{ license_days_remaining }} يوم</span>
                 {% endif %}
             {% endif %}
+
+            <div class="notif-bell-wrap">
+                <button type="button" class="notif-bell-btn" id="notifBellBtn" aria-label="الإشعارات">
+                    🔔
+                    <span class="notif-bell-badge {{ 'hidden' if not unread_notifications_count }}" id="notifBellBadge">{{ unread_notifications_count if unread_notifications_count else '' }}</span>
+                </button>
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-dropdown-header">
+                        <span>الإشعارات</span>
+                        <a href="#" id="notifMarkAllBtn">تعليم الكل كمقروء</a>
+                    </div>
+                    <div class="notif-dropdown-body" id="notifDropdownBody">
+                        <div class="notif-dropdown-empty">جارِ التحميل...</div>
+                    </div>
+                    <div class="notif-dropdown-footer">
+                        <a href="{{ url_for('notifications.list_notifications') }}">عرض كل الإشعارات</a>
+                    </div>
+                </div>
+            </div>
+
             <span>{{ current_user.full_name }} ({{ current_user.role.name if current_user.role else '' }})</span>
             <div class="user-avatar">{{ current_user.full_name[0] if current_user.full_name else 'U' }}</div>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-logout btn-sm">🚪 خروج</a>
         </div>
     </header>
 
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+
     <nav class="fiori-sidebar">
         <div class="nav-group-title">الرئيسية</div>
         <a class="nav-link {{ 'active' if request.blueprint=='dashboard' }}" href="{{ url_for('dashboard.index') }}">📊 لوحة التحكم</a>
+        <a class="nav-link {{ 'active' if request.blueprint=='notifications' }}" href="{{ url_for('notifications.list_notifications') }}">
+            🔔 الإشعارات
+            {% if unread_notifications_count %}<span class="badge badge-red" style="margin-left:auto;">{{ unread_notifications_count }}</span>{% endif %}
+        </a>
 
         <div class="nav-group-title">الصيانة</div>
         <a class="nav-link {{ 'active' if request.blueprint=='vehicles' }}" href="{{ url_for('vehicles.list_vehicles') }}">🚗 إدارة السيارات</a>
@@ -72,5 +102,110 @@
         {% endwith %}
         {% block content %}{% endblock %}
     </main>
+
+    <script>
+    (function() {
+        // ---------- القائمة الجانبية على الجوال ----------
+        var sidebar = document.querySelector('.fiori-sidebar');
+        var backdrop = document.getElementById('sidebarBackdrop');
+        var menuBtn = document.getElementById('menuToggleBtn');
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            backdrop.classList.remove('open');
+        }
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            backdrop.classList.toggle('open');
+        }
+        if (menuBtn) menuBtn.addEventListener('click', toggleSidebar);
+        if (backdrop) backdrop.addEventListener('click', closeSidebar);
+        sidebar.querySelectorAll('a.nav-link').forEach(function(a) {
+            a.addEventListener('click', closeSidebar);
+        });
+
+        // ---------- جرس الإشعارات ----------
+        var bellBtn = document.getElementById('notifBellBtn');
+        var dropdown = document.getElementById('notifDropdown');
+        var badge = document.getElementById('notifBellBadge');
+        var body = document.getElementById('notifDropdownBody');
+        var markAllBtn = document.getElementById('notifMarkAllBtn');
+        var severityIcon = { danger: '🔴', warning: '🟠', info: '🔵' };
+
+        function renderNotifications(data) {
+            if (!data.items || data.items.length === 0) {
+                body.innerHTML = '<div class="notif-dropdown-empty">لا توجد إشعارات حالياً 🎉</div>';
+                return;
+            }
+            var html = '';
+            data.items.forEach(function(n) {
+                html += '<div class="notif-dropdown-item ' + (n.is_read ? '' : 'unread') + ' sev-' + n.severity + '" data-id="' + n.id + '" data-link="' + (n.link_url || '') + '">' +
+                    '<div class="ic">' + n.icon + '</div>' +
+                    '<div class="txt">' +
+                        '<div class="t">' + n.title + '</div>' +
+                        '<div class="m">' + n.message + '</div>' +
+                        '<div class="d">' + n.created_at + '</div>' +
+                    '</div>' +
+                '</div>';
+            });
+            body.innerHTML = html;
+            body.querySelectorAll('.notif-dropdown-item').forEach(function(el) {
+                el.addEventListener('click', function() {
+                    var id = el.getAttribute('data-id');
+                    var link = el.getAttribute('data-link');
+                    fetch('/notifications/' + id + '/read', {
+                        method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    }).finally(function() {
+                        if (link) window.location.href = link;
+                        else refreshNotifications();
+                    });
+                });
+            });
+        }
+
+        function updateBadge(count) {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function refreshNotifications() {
+            fetch('/notifications/recent').then(function(r) { return r.json(); }).then(function(data) {
+                updateBadge(data.unread_count);
+                renderNotifications(data);
+            }).catch(function() {});
+        }
+
+        if (bellBtn) {
+            bellBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var willOpen = !dropdown.classList.contains('open');
+                dropdown.classList.toggle('open');
+                if (willOpen) refreshNotifications();
+            });
+        }
+        document.addEventListener('click', function(e) {
+            if (dropdown && !dropdown.contains(e.target) && e.target !== bellBtn) {
+                dropdown.classList.remove('open');
+            }
+        });
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                fetch('/notifications/read-all', {
+                    method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).then(refreshNotifications);
+            });
+        }
+
+        if (bellBtn) {
+            refreshNotifications();
+            setInterval(refreshNotifications, 45000);
+        }
+    })();
+    </script>
 </body>
 </html>
