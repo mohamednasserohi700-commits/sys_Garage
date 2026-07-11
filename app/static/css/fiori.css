@@ -185,7 +185,7 @@ table.fiori-table tbody tr:hover { background: var(--fiori-blue-light); }
 .empty-state { text-align: center; padding: 60px 20px; color: var(--fiori-gray); }
 .text-muted { color: var(--fiori-gray); }
 .mt-2 { margin-top: 10px; } .mb-2 { margin-bottom: 10px; }
-.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .parts-row-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 8px; }
 
 @media print {
@@ -194,8 +194,143 @@ table.fiori-table tbody tr:hover { background: var(--fiori-blue-light); }
     .print-header { display: block !important; margin-bottom: 14px; }
 }
 
+/* ---------- Notification bell ---------- */
+.notif-bell-wrap { position: relative; }
+.notif-bell-btn {
+    position: relative; background: none; border: none; cursor: pointer;
+    font-size: 19px; color: #fff; padding: 6px; line-height: 1; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+}
+.notif-bell-btn:hover { background: rgba(255,255,255,.12); }
+.notif-bell-badge {
+    position: absolute; top: -2px; left: -2px; background: var(--fiori-danger); color: #fff;
+    font-size: 10px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; padding: 0 3px;
+    border: 2px solid var(--fiori-header);
+}
+.notif-bell-badge.hidden { display: none; }
+.notif-dropdown {
+    position: absolute; top: 42px; left: 0; width: 340px; max-width: 92vw;
+    background: #fff; color: var(--fiori-text); border-radius: 8px; border: 1px solid var(--fiori-border);
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); z-index: 200; overflow: hidden; display: none;
+}
+.notif-dropdown.open { display: block; }
+.notif-dropdown-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--fiori-border); font-weight: 700; font-size: 13.5px;
+}
+.notif-dropdown-header a { font-size: 12px; font-weight: 600; color: var(--fiori-blue); }
+.notif-dropdown-body { max-height: 360px; overflow-y: auto; }
+.notif-dropdown-empty { padding: 30px 14px; text-align: center; color: var(--fiori-gray); font-size: 13px; }
+.notif-dropdown-item {
+    display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #F0F0F0;
+    cursor: pointer; align-items: flex-start;
+}
+.notif-dropdown-item:hover { background: var(--fiori-blue-light); }
+.notif-dropdown-item.unread { background: #F6FAFF; }
+.notif-dropdown-item .ic { font-size: 18px; flex-shrink: 0; }
+.notif-dropdown-item .txt { flex: 1; min-width: 0; }
+.notif-dropdown-item .txt .t { font-size: 12.5px; font-weight: 700; margin-bottom: 2px; }
+.notif-dropdown-item .txt .m {
+    font-size: 11.5px; color: var(--fiori-gray); overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.notif-dropdown-item .txt .d { font-size: 10.5px; color: #999; margin-top: 3px; }
+.notif-dropdown-item.sev-danger .ic { filter: saturate(1.4); }
+.notif-dropdown-footer { padding: 8px 14px; text-align: center; border-top: 1px solid var(--fiori-border); }
+.notif-dropdown-footer a { font-size: 12.5px; color: var(--fiori-blue); font-weight: 600; }
+.notif-backdrop {
+    position: fixed; inset: 0; z-index: 190; display: none; background: transparent;
+}
+.notif-backdrop.open { display: block; }
+
+/* ---------- Notification list page ---------- */
+.notif-list { display: flex; flex-direction: column; }
+.notif-row {
+    display: flex; gap: 14px; padding: 14px 6px; border-bottom: 1px solid var(--fiori-border);
+    align-items: flex-start; border-right: 4px solid transparent;
+}
+.notif-row:last-child { border-bottom: none; }
+.notif-row.unread { background: #F6FAFF; }
+.notif-row.severity-warning { border-right-color: var(--fiori-warning); }
+.notif-row.severity-danger { border-right-color: var(--fiori-danger); }
+.notif-row.severity-info { border-right-color: var(--fiori-blue); }
+.notif-row .notif-icon { font-size: 22px; flex-shrink: 0; }
+.notif-row .notif-body { flex: 1; min-width: 0; }
+.notif-row .notif-title { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.notif-row .notif-message { font-size: 13px; color: var(--fiori-text); margin-bottom: 6px; }
+.notif-row .notif-meta { display: flex; gap: 10px; align-items: center; font-size: 11.5px; flex-wrap: wrap; }
+.notif-row .notif-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+
+/* =====================================================================
+   الوضع المتجاوب للهواتف (Mobile Responsive) - جودة عرض عالية على الجوال
+   ===================================================================== */
+
+/* زر فتح القائمة الجانبية على الجوال (مخفي على الشاشات الكبيرة) */
+.menu-toggle-btn {
+    display: none; background: none; border: none; color: #fff; font-size: 22px;
+    cursor: pointer; padding: 4px 8px; margin-left: 4px; line-height: 1;
+}
+.sidebar-backdrop {
+    display: none; position: fixed; inset: 0; top: 52px; background: rgba(0,0,0,.45); z-index: 85;
+}
+.sidebar-backdrop.open { display: block; }
+
 @media (max-width: 900px) {
-    .fiori-sidebar { transform: translateX(100%); transition: .2s; }
+    .menu-toggle-btn { display: inline-flex; align-items: center; justify-content: center; }
+    .fiori-header { padding: 0 10px; gap: 6px; }
+    .fiori-header .brand span { font-size: 14px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fiori-header .user-box { gap: 8px; }
+    .fiori-header .user-box > span:not(.notif-bell-wrap) { display: none; }
+    .fiori-header .user-avatar { width: 28px; height: 28px; font-size: 12px; }
+
+    .fiori-sidebar {
+        transform: translateX(100%); transition: transform .22s ease; width: min(78vw, 300px);
+        box-shadow: -4px 0 18px rgba(0,0,0,.2);
+    }
     .fiori-sidebar.open { transform: translateX(0); }
     .fiori-content { margin-right: 0; padding: 14px; }
+
+    .page-title { flex-direction: column; align-items: flex-start; gap: 10px; font-size: 18px; }
+    .page-title > div { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
+    .page-title .btn { flex: 1 1 auto; justify-content: center; }
+
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .kpi-card { padding: 12px 14px; }
+    .kpi-card .kpi-value { font-size: 21px; }
+
+    .form-grid { grid-template-columns: 1fr; }
+    .parts-row-grid { grid-template-columns: 1fr; }
+    .parts-row-grid .btn { width: 100%; justify-content: center; }
+
+    .search-bar { flex-direction: column; align-items: stretch; }
+    .search-bar input[type=text], .search-bar select { min-width: 0; width: 100%; }
+    .search-bar .btn { width: 100%; justify-content: center; }
+
+    /* أزرار وحقول أكبر لسهولة اللمس */
+    .btn { padding: 10px 16px; font-size: 14px; min-height: 40px; }
+    .btn-sm { padding: 8px 12px; font-size: 12.5px; min-height: 34px; }
+    input, select, textarea { padding: 11px 10px; font-size: 15px; }
+
+    /* الجداول: سماح بالتمرير الأفقي مع الحفاظ على وضوح الخط */
+    .fiori-table-wrap { -webkit-overflow-scrolling: touch; border: 1px solid var(--fiori-border); border-radius: 8px; }
+    table.fiori-table { font-size: 12.5px; min-width: 640px; }
+    table.fiori-table th, table.fiori-table td { padding: 8px 10px; white-space: nowrap; }
+
+    .fiori-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+    .fiori-tabs .tab-btn { white-space: nowrap; padding: 10px 14px; }
+
+    .notif-dropdown { position: fixed; top: 52px; left: 6px; right: 6px; width: auto; max-width: none; }
+
+    .notif-row { flex-wrap: wrap; }
+    .notif-row .notif-actions { width: 100%; justify-content: flex-start; margin-top: 6px; }
+
+    .login-card { width: 92vw; padding: 30px 22px; }
+}
+
+@media (max-width: 480px) {
+    body { font-size: 13.5px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .fiori-content { padding: 10px; }
+    .fiori-card { padding: 14px; }
 }
