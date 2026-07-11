@@ -11,6 +11,7 @@ from .adjustment import StockAdjustment
 from .settings import CompanySettings
 from .license import License, IssuedSerial
 from .sale import SaleInvoice, SaleInvoiceItem
+from .notification import Notification, NotificationType
 
 __all__ = [
     "User", "Role", "Permission", "RolePermission",
@@ -26,4 +27,5 @@ __all__ = [
     "CompanySettings",
     "License", "IssuedSerial",
     "SaleInvoice", "SaleInvoiceItem",
+    "Notification", "NotificationType",
 ]
